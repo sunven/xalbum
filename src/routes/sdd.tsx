@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { setResponseHeader } from "@tanstack/react-start/server"
+import type { ComponentType } from "react"
+import DotField from "@/components/DotField"
 import { GithubProjectCard } from "@/components/github-project-card"
+import Shuffle from "@/components/Shuffle"
 import type { GithubProject } from "@/lib/github-project"
 import { sortGithubProjectsByStarsDesc } from "@/lib/github-project-sort"
 
@@ -13,6 +16,21 @@ export const Route = createFileRoute("/sdd")({
 type RepoConfig = {
   id: `${string}/${string}`
 }
+
+type DotFieldProps = {
+  dotRadius?: number
+  dotSpacing?: number
+  cursorRadius?: number
+  bulgeStrength?: number
+  glowRadius?: number
+  sparkle?: boolean
+  waveAmplitude?: number
+  gradientFrom?: string
+  gradientTo?: string
+  glowColor?: string
+}
+
+const SddDotField = DotField as ComponentType<DotFieldProps>
 
 type GithubProjectsData = {
   projects: GithubProject[]
@@ -118,21 +136,6 @@ const sddPageStyles = `
     --chart-5: oklch(0.55 0.18 320);
   }
 
-  .sdd-page .bg-grid {
-    background-image:
-      linear-gradient(
-        to right,
-        oklch(0.58 0.13 200 / 0.08) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        to bottom,
-        oklch(0.58 0.13 200 / 0.08) 1px,
-        transparent 1px
-      );
-    background-size: 32px 32px;
-  }
-
   .sdd-page .text-glow {
     text-shadow: 0 0 12px oklch(0.58 0.13 200 / 0.35);
   }
@@ -158,20 +161,6 @@ const sddPageStyles = `
 
   .sdd-page .animate-pulse-dot {
     animation: sdd-pulse-dot 1.8s ease-in-out infinite;
-  }
-
-  @keyframes sdd-scan-line {
-    0% {
-      transform: translateY(-100%);
-    }
-
-    100% {
-      transform: translateY(100%);
-    }
-  }
-
-  .sdd-page .animate-scan {
-    animation: sdd-scan-line 2.5s linear infinite;
   }
 `
 
@@ -303,16 +292,21 @@ function SddPage() {
       <style>{sddPageStyles}</style>
       <div
         aria-hidden="true"
-        className="bg-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-1/4 size-[400px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/3 right-0 size-[500px] translate-x-1/3 rounded-full bg-chart-2/10 blur-3xl"
-      />
+        className="pointer-events-none absolute inset-0 opacity-80 [mask-image:linear-gradient(to_bottom,black_0%,black_72%,transparent_100%)]"
+      >
+        <SddDotField
+          dotRadius={1.4}
+          dotSpacing={16}
+          cursorRadius={420}
+          bulgeStrength={54}
+          glowRadius={0}
+          sparkle={false}
+          waveAmplitude={0}
+          gradientFrom="oklch(0.58 0.13 200 / 0.34)"
+          gradientTo="oklch(0.62 0.15 145 / 0.22)"
+          glowColor="transparent"
+        />
+      </div>
 
       <div className="relative mx-auto max-w-6xl px-6 pt-8 pb-16 sm:pt-10 sm:pb-20">
         <header className="mb-12 flex flex-col gap-4">
@@ -325,12 +319,40 @@ function SddPage() {
             <span className="h-px flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
           </div>
 
-          <h1 className="font-mono text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
-            <span className="text-primary">{"//"}</span> SDD 框架与工具图谱
-            <span className="ml-2 inline-block animate-pulse text-primary">
+          <div className="flex items-baseline gap-2 font-mono text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
+            <span className="shrink-0 text-primary" aria-hidden="true">
+              {"//"}
+            </span>
+            <Shuffle
+              text="SDD 框架与工具图谱"
+              tag="h1"
+              textAlign="left"
+              shuffleDirection="right"
+              duration={0.35}
+              animationMode="evenodd"
+              shuffleTimes={1}
+              ease="power3.out"
+              stagger={0.03}
+              threshold={0.1}
+              triggerOnce={true}
+              triggerOnHover={true}
+              respectReducedMotion={true}
+              onShuffleComplete={undefined}
+              colorFrom={undefined}
+              colorTo={undefined}
+              className="m-0 inline-block font-mono text-3xl font-semibold tracking-tight text-foreground normal-case sm:text-5xl"
+              style={{
+                fontSize: "inherit",
+                fontFamily: "inherit",
+                fontWeight: "inherit",
+                lineHeight: "1.1",
+                textTransform: "none",
+              }}
+            />
+            <span className="shrink-0 animate-pulse text-primary" aria-hidden="true">
               _
             </span>
-          </h1>
+          </div>
 
           <p className="max-w-2xl font-sans text-sm leading-relaxed text-pretty text-muted-foreground sm:text-base">
             聚合 Spec-driven development (SDD)
