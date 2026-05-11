@@ -38,6 +38,7 @@ export function GithubProjectCard({
       glareAngle={-30}
       glareSize={180}
       transitionDuration={800}
+      playOnce
       className={cn(
         "group min-h-full place-items-stretch shadow-sm transition-all duration-300",
         "hover:border-primary/60 hover:shadow-glow",

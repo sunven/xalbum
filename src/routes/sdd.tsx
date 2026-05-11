@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { setResponseHeader } from "@tanstack/react-start/server"
+import { Moon, Sun } from "@phosphor-icons/react"
+import { useEffect, useState } from "react"
 import type { ComponentType } from "react"
+import type { GithubProject } from "@/lib/github-project"
 import DotField from "@/components/DotField"
 import { GithubProjectCard } from "@/components/github-project-card"
 import Shuffle from "@/components/Shuffle"
-import type { GithubProject } from "@/lib/github-project"
 import { sortGithubProjectsByStarsDesc } from "@/lib/github-project-sort"
 
 export const Route = createFileRoute("/sdd")({
@@ -16,6 +18,8 @@ export const Route = createFileRoute("/sdd")({
 type RepoConfig = {
   id: `${string}/${string}`
 }
+
+type SddTheme = "light" | "dark"
 
 type DotFieldProps = {
   dotRadius?: number
@@ -32,8 +36,21 @@ type DotFieldProps = {
 
 const SddDotField = DotField as ComponentType<DotFieldProps>
 
+const sddThemeStorageKey = "xalbum:sdd-theme"
+
+const sddDotFieldTheme = {
+  light: {
+    gradientFrom: "oklch(0.58 0.13 200 / 0.34)",
+    gradientTo: "oklch(0.62 0.15 145 / 0.22)",
+  },
+  dark: {
+    gradientFrom: "oklch(0.74 0.14 190 / 0.3)",
+    gradientTo: "oklch(0.76 0.16 145 / 0.18)",
+  },
+} satisfies Record<SddTheme, { gradientFrom: string; gradientTo: string }>
+
 type GithubProjectsData = {
-  projects: GithubProject[]
+  projects: Array<GithubProject>
   error?: string
 }
 
@@ -49,7 +66,7 @@ type GithubRepoResponse = {
   default_branch: string
   updated_at: string
   pushed_at: string | null
-  topics?: string[]
+  topics?: Array<string>
   license: {
     spdx_id: string | null
   } | null
@@ -59,7 +76,7 @@ type GithubRepoResponse = {
   }
 }
 
-const repoConfigs: RepoConfig[] = [
+const repoConfigs: Array<RepoConfig> = [
   {
     id: "github/spec-kit",
   },
@@ -112,6 +129,7 @@ const languageColors: Record<string, string> = {
 
 const sddPageStyles = `
   .sdd-page {
+    color-scheme: light;
     --background: oklch(0.985 0.003 240);
     --foreground: oklch(0.22 0.03 240);
     --card: oklch(1 0 0);
@@ -134,6 +152,32 @@ const sddPageStyles = `
     --chart-3: oklch(0.7 0.16 70);
     --chart-4: oklch(0.6 0.2 25);
     --chart-5: oklch(0.55 0.18 320);
+  }
+
+  .sdd-page[data-theme="dark"] {
+    color-scheme: dark;
+    --background: oklch(0.145 0.018 245);
+    --foreground: oklch(0.93 0.022 225);
+    --card: oklch(0.19 0.022 238);
+    --card-foreground: oklch(0.93 0.022 225);
+    --popover: oklch(0.19 0.022 238);
+    --popover-foreground: oklch(0.93 0.022 225);
+    --primary: oklch(0.74 0.14 190);
+    --primary-foreground: oklch(0.13 0.018 245);
+    --secondary: oklch(0.24 0.026 235);
+    --secondary-foreground: oklch(0.88 0.03 225);
+    --muted: oklch(0.23 0.021 238);
+    --muted-foreground: oklch(0.71 0.03 225);
+    --accent: oklch(0.76 0.16 145);
+    --accent-foreground: oklch(0.13 0.018 245);
+    --border: oklch(0.34 0.03 235);
+    --input: oklch(0.3 0.028 235);
+    --ring: oklch(0.74 0.14 190);
+    --chart-1: oklch(0.74 0.14 190);
+    --chart-2: oklch(0.76 0.16 145);
+    --chart-3: oklch(0.78 0.16 70);
+    --chart-4: oklch(0.72 0.18 25);
+    --chart-5: oklch(0.72 0.16 320);
   }
 
   .sdd-page .text-glow {
@@ -286,13 +330,38 @@ function formatRelativeTime(dateValue: string) {
 
 function SddPage() {
   const { projects, error } = Route.useLoaderData()
+  const [theme, setTheme] = useState<SddTheme>("light")
+  const [themeReady, setThemeReady] = useState(false)
+  const dotFieldTheme = sddDotFieldTheme[theme]
+
+  useEffect(() => {
+    setTheme(getPreferredSddTheme())
+    setThemeReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!themeReady) {
+      return
+    }
+
+    try {
+      window.localStorage.setItem(sddThemeStorageKey, theme)
+    } catch {
+      // Ignore storage failures so the switch still works in private contexts.
+    }
+  }, [theme, themeReady])
 
   return (
-    <main className="sdd-page relative min-h-screen overflow-hidden bg-background">
+    <main
+      className={`sdd-page ${
+        theme === "dark" ? "dark" : ""
+      } relative min-h-screen overflow-hidden bg-background transition-colors duration-300`}
+      data-theme={theme}
+    >
       <style>{sddPageStyles}</style>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-80 [mask-image:linear-gradient(to_bottom,black_0%,black_72%,transparent_100%)]"
+        className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black_0%,black_72%,transparent_100%)] opacity-80"
       >
         <SddDotField
           dotRadius={1.4}
@@ -302,21 +371,29 @@ function SddPage() {
           glowRadius={0}
           sparkle={false}
           waveAmplitude={0}
-          gradientFrom="oklch(0.58 0.13 200 / 0.34)"
-          gradientTo="oklch(0.62 0.15 145 / 0.22)"
+          gradientFrom={dotFieldTheme.gradientFrom}
+          gradientTo={dotFieldTheme.gradientTo}
           glowColor="transparent"
         />
       </div>
 
       <div className="relative mx-auto max-w-6xl px-6 pt-8 pb-16 sm:pt-10 sm:pb-20">
         <header className="mb-12 flex flex-col gap-4">
-          <div className="flex items-center gap-3 font-mono text-xs tracking-[0.3em] text-primary uppercase">
-            <span className="flex size-2 items-center justify-center">
-              <span className="animate-pulse-dot absolute size-2 rounded-full bg-primary" />
-              <span className="size-1 rounded-full bg-primary" />
-            </span>
-            <span>SYS://SDD.TOOLS.INIT</span>
-            <span className="h-px flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3 font-mono text-xs tracking-[0.3em] text-primary uppercase">
+              <span className="flex size-2 shrink-0 items-center justify-center">
+                <span className="animate-pulse-dot absolute size-2 rounded-full bg-primary" />
+                <span className="size-1 rounded-full bg-primary" />
+              </span>
+              <span className="min-w-0 truncate">SYS://SDD.TOOLS.INIT</span>
+              <span className="h-px flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
+            </div>
+            <SddThemeSwitch
+              theme={theme}
+              onToggle={() =>
+                setTheme((current) => (current === "dark" ? "light" : "dark"))
+              }
+            />
           </div>
 
           <div className="flex items-baseline gap-2 font-mono text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
@@ -349,7 +426,10 @@ function SddPage() {
                 textTransform: "none",
               }}
             />
-            <span className="shrink-0 animate-pulse text-primary" aria-hidden="true">
+            <span
+              className="shrink-0 animate-pulse text-primary"
+              aria-hidden="true"
+            >
               _
             </span>
           </div>
@@ -412,6 +492,55 @@ function SddPage() {
         </footer>
       </div>
     </main>
+  )
+}
+
+function getPreferredSddTheme(): SddTheme {
+  try {
+    const storedTheme = window.localStorage.getItem(sddThemeStorageKey)
+    if (storedTheme === "light" || storedTheme === "dark") {
+      return storedTheme
+    }
+  } catch {
+    // Ignore storage failures and continue with the browser preference.
+  }
+
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark"
+  }
+
+  return "light"
+}
+
+function SddThemeSwitch({
+  theme,
+  onToggle,
+}: {
+  theme: SddTheme
+  onToggle: () => void
+}) {
+  const isDark = theme === "dark"
+
+  return (
+    <button
+      type="button"
+      aria-label={isDark ? "切换到浅色模式" : "切换到深色模式"}
+      aria-pressed={isDark}
+      onClick={onToggle}
+      className="relative inline-flex h-8 w-16 shrink-0 items-center border border-border bg-card/80 p-1 text-primary shadow-sm backdrop-blur transition-colors duration-300 outline-none hover:border-primary/70 hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring/60"
+    >
+      <span
+        aria-hidden="true"
+        className={`shadow-glow flex size-6 items-center justify-center border border-border bg-background transition-transform duration-300 ${
+          isDark ? "translate-x-8" : "translate-x-0"
+        }`}
+      >
+        {isDark ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
+      </span>
+      <span className="sr-only">
+        {isDark ? "当前为深色模式" : "当前为浅色模式"}
+      </span>
+    </button>
   )
 }
 
