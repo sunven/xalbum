@@ -11,7 +11,10 @@ export interface GithubProject {
   issues: number
   license: string
   defaultBranch: string
-  topics: string[]
+  version: string
+  versionSource: "npm" | "release" | "tag" | "none"
+  versionUrl?: string
+  topics: Array<string>
   updatedAt: string
   url: string
 }

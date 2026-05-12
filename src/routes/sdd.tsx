@@ -17,6 +17,7 @@ export const Route = createFileRoute("/sdd")({
 
 type RepoConfig = {
   id: `${string}/${string}`
+  npmPackage?: string
 }
 
 type SddTheme = "light" | "dark"
@@ -74,6 +75,27 @@ type GithubRepoResponse = {
     login: string
     avatar_url: string
   }
+}
+
+type GithubReleaseResponse = {
+  html_url: string
+  tag_name: string
+}
+
+type GithubTagResponse = {
+  name: string
+}
+
+type NpmPackageResponse = {
+  "dist-tags"?: {
+    latest?: string
+  }
+}
+
+type ProjectVersion = {
+  version: string
+  versionSource: GithubProject["versionSource"]
+  versionUrl?: string
 }
 
 const repoConfigs: Array<RepoConfig> = [
@@ -215,7 +237,8 @@ const getGithubProjects = createServerFn({ method: "GET" }).handler(
     const results = await Promise.allSettled(
       repoConfigs.map(async (config) => {
         const repo = await fetchGithubRepo(config.id)
-        return mapGithubRepoToProject(repo)
+        const version = await resolveProjectVersion(config)
+        return mapGithubRepoToProject(repo, version)
       })
     )
 
@@ -244,6 +267,10 @@ const getGithubProjects = createServerFn({ method: "GET" }).handler(
 async function fetchGithubRepo(
   id: RepoConfig["id"]
 ): Promise<GithubRepoResponse> {
+  return fetchGithubJson<GithubRepoResponse>(`repos/${id}`)
+}
+
+async function fetchGithubJson<T>(path: string): Promise<T> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "User-Agent": "xalbum-github-showcase",
@@ -254,14 +281,14 @@ async function fetchGithubRepo(
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(`https://api.github.com/repos/${id}`, {
+  const response = await fetch(`https://api.github.com/${path}`, {
     headers,
   })
 
   if (!response.ok) {
     const message = await response.text()
     throw new Error(
-      `GitHub repo request failed: ${id} ${response.status} ${response.statusText} ${message.slice(0, 240)}`
+      `GitHub request failed: ${path} ${response.status} ${response.statusText} ${message.slice(0, 240)}`
     )
   }
 
@@ -279,7 +306,120 @@ function getGithubErrorMessage(reason: unknown) {
   return "GitHub API request failed."
 }
 
-function mapGithubRepoToProject(repo: GithubRepoResponse): GithubProject {
+async function resolveProjectVersion(
+  config: RepoConfig
+): Promise<ProjectVersion> {
+  if (config.npmPackage) {
+    const npmVersion = await fetchNpmPackageVersion(config.npmPackage)
+    if (npmVersion.versionSource !== "none") {
+      return npmVersion
+    }
+  }
+
+  const releaseVersion = await fetchLatestReleaseVersion(config.id)
+  if (releaseVersion.versionSource !== "none") {
+    return releaseVersion
+  }
+
+  return fetchLatestTagVersion(config.id)
+}
+
+async function fetchNpmPackageVersion(
+  packageName: string
+): Promise<ProjectVersion> {
+  try {
+    const encodedPackageName = packageName
+      .split("/")
+      .map((part) => encodeURIComponent(part))
+      .join("/")
+
+    const response = await fetch(
+      `https://registry.npmjs.org/${encodedPackageName}`,
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "xalbum-github-showcase",
+        },
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(
+        `npm package request failed: ${packageName} ${response.status} ${response.statusText}`
+      )
+    }
+
+    const npmPackage = (await response.json()) as NpmPackageResponse
+    const latestVersion = npmPackage["dist-tags"]?.latest
+    if (!latestVersion) {
+      return emptyProjectVersion()
+    }
+
+    return {
+      version: latestVersion,
+      versionSource: "npm",
+      versionUrl: `https://www.npmjs.com/package/${encodedPackageName}/v/${encodeURIComponent(latestVersion)}`,
+    }
+  } catch (error) {
+    console.error("npm package version request failed", packageName, error)
+    return emptyProjectVersion()
+  }
+}
+
+async function fetchLatestReleaseVersion(
+  id: RepoConfig["id"]
+): Promise<ProjectVersion> {
+  try {
+    const release = await fetchGithubJson<GithubReleaseResponse>(
+      `repos/${id}/releases/latest`
+    )
+
+    return {
+      version: release.tag_name,
+      versionSource: "release",
+      versionUrl: release.html_url,
+    }
+  } catch (error) {
+    console.error("GitHub latest release request failed", id, error)
+    return emptyProjectVersion()
+  }
+}
+
+async function fetchLatestTagVersion(
+  id: RepoConfig["id"]
+): Promise<ProjectVersion> {
+  try {
+    const tags = await fetchGithubJson<Array<GithubTagResponse>>(
+      `repos/${id}/tags?per_page=1`
+    )
+    if (tags.length === 0) {
+      return emptyProjectVersion()
+    }
+
+    const [tag] = tags
+
+    return {
+      version: tag.name,
+      versionSource: "tag",
+      versionUrl: `https://github.com/${id}/tree/${encodeURIComponent(tag.name)}`,
+    }
+  } catch (error) {
+    console.error("GitHub latest tag request failed", id, error)
+    return emptyProjectVersion()
+  }
+}
+
+function emptyProjectVersion(): ProjectVersion {
+  return {
+    version: "NO VERSION",
+    versionSource: "none",
+  }
+}
+
+function mapGithubRepoToProject(
+  repo: GithubRepoResponse,
+  version: ProjectVersion
+): GithubProject {
   const language = repo.language ?? "Unknown"
 
   return {
@@ -295,6 +435,9 @@ function mapGithubRepoToProject(repo: GithubRepoResponse): GithubProject {
     issues: repo.open_issues_count,
     license: repo.license?.spdx_id ?? "NOASSERTION",
     defaultBranch: repo.default_branch,
+    version: version.version,
+    versionSource: version.versionSource,
+    versionUrl: version.versionUrl,
     topics: repo.topics ?? [],
     updatedAt: formatRelativeTime(repo.pushed_at ?? repo.updated_at),
     url: repo.html_url,

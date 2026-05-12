@@ -1,15 +1,18 @@
 import {
+  Pulse as Activity,
   Circle as CircleDot,
   Eye,
   GitBranch,
   GitFork,
-  Pulse as Activity,
+  Package,
+  RocketLaunch,
   Scales as Scale,
   Star,
+  Tag,
 } from "@phosphor-icons/react" 
 
-import GlareHover from "@/components/GlareHover"
 import type { GithubProject } from "@/lib/github-project"
+import GlareHover from "@/components/GlareHover"
 import { cn } from "@/lib/utils"
 
 function formatNumber(num: number) {
@@ -18,6 +21,31 @@ function formatNumber(num: number) {
   }
   return num.toString()
 }
+
+const versionSourceMeta = {
+  npm: {
+    label: "NPM",
+    icon: Package,
+  },
+  release: {
+    label: "REL",
+    icon: RocketLaunch,
+  },
+  tag: {
+    label: "TAG",
+    icon: Tag,
+  },
+  none: {
+    label: "VER",
+    icon: Tag,
+  },
+} satisfies Record<
+  GithubProject["versionSource"],
+  {
+    label: string
+    icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
+  }
+>
 
 export function GithubProjectCard({
   project,
@@ -118,6 +146,8 @@ export function GithubProjectCard({
             </div>
           )}
 
+          <VersionBadge project={project} />
+
           <dl className="mt-auto grid grid-cols-3 gap-2 border-t border-border pt-3">
             <Metric
               icon={<GitFork className="size-3" aria-hidden="true" />}
@@ -166,6 +196,43 @@ export function GithubProjectCard({
         </footer>
       </article>
     </GlareHover>
+  )
+}
+
+function VersionBadge({ project }: { project: GithubProject }) {
+  const meta = versionSourceMeta[project.versionSource]
+  const Icon = meta.icon
+  const isKnownVersion = project.versionSource !== "none"
+  const className = cn(
+    "inline-flex w-fit max-w-full items-center gap-1.5 border px-2.5 py-1 text-[10px] font-medium tracking-wider uppercase transition-colors",
+    isKnownVersion
+      ? "border-primary/40 bg-primary/10 text-primary hover:border-primary hover:bg-primary/15"
+      : "border-border bg-secondary/40 text-muted-foreground"
+  )
+  const content = (
+    <>
+      <Icon className="size-3 shrink-0" aria-hidden="true" />
+      <span className="shrink-0">{meta.label}</span>
+      <span className="min-w-0 truncate text-foreground/90">
+        {project.version}
+      </span>
+    </>
+  )
+
+  if (!project.versionUrl) {
+    return <span className={className}>{content}</span>
+  }
+
+  return (
+    <a
+      href={project.versionUrl}
+      target="_blank"
+      rel="noreferrer"
+      className={className}
+      aria-label={`${project.owner} / ${project.name} version ${project.version}`}
+    >
+      {content}
+    </a>
   )
 }
 
