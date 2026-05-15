@@ -49,9 +49,11 @@ const versionSourceMeta = {
 
 export function GithubProjectCard({
   project,
+  hasNewVersion = false,
   className,
 }: {
   project: GithubProject
+  hasNewVersion?: boolean
   className?: string
 }) {
   return (
@@ -146,7 +148,7 @@ export function GithubProjectCard({
             </div>
           )}
 
-          <VersionBadge project={project} />
+          <VersionBadge project={project} hasNewVersion={hasNewVersion} />
 
           <dl className="mt-auto grid grid-cols-3 gap-2 border-t border-border pt-3">
             <Metric
@@ -199,7 +201,13 @@ export function GithubProjectCard({
   )
 }
 
-function VersionBadge({ project }: { project: GithubProject }) {
+function VersionBadge({
+  project,
+  hasNewVersion,
+}: {
+  project: GithubProject
+  hasNewVersion: boolean
+}) {
   const meta = versionSourceMeta[project.versionSource]
   const Icon = meta.icon
   const isKnownVersion = project.versionSource !== "none"
@@ -216,6 +224,11 @@ function VersionBadge({ project }: { project: GithubProject }) {
       <span className="min-w-0 truncate text-foreground/90">
         {project.version}
       </span>
+      {hasNewVersion && (
+        <span className="shrink-0 border border-chart-3/50 bg-chart-3/15 px-1.5 py-0.5 text-[9px] font-semibold tracking-widest text-chart-3">
+          NEW
+        </span>
+      )}
     </>
   )
 
@@ -229,7 +242,9 @@ function VersionBadge({ project }: { project: GithubProject }) {
       target="_blank"
       rel="noreferrer"
       className={className}
-      aria-label={`${project.owner} / ${project.name} version ${project.version}`}
+      aria-label={`${project.owner} / ${project.name} version ${project.version}${
+        hasNewVersion ? " new since last visit" : ""
+      }`}
     >
       {content}
     </a>

@@ -5,10 +5,18 @@ import { Moon, Sun } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import type { ComponentType } from "react"
 import type { GithubProject } from "@/lib/github-project"
+import type { SddProjectVersionSnapshot } from "@/lib/sdd-version-history"
 import DotField from "@/components/DotField"
 import { GithubProjectCard } from "@/components/github-project-card"
 import Shuffle from "@/components/Shuffle"
 import { sortGithubProjectsByStarsDesc } from "@/lib/github-project-sort"
+import {
+  buildSddProjectVersionSnapshot,
+  getNewVersionProjectIds,
+  getSddProjectVersionStorageId,
+  parseSddProjectVersionSnapshot,
+  sddProjectVersionsStorageKey,
+} from "@/lib/sdd-version-history"
 
 export const Route = createFileRoute("/sdd")({
   loader: () => getGithubProjects(),
@@ -475,6 +483,9 @@ function SddPage() {
   const { projects, error } = Route.useLoaderData()
   const [theme, setTheme] = useState<SddTheme>("light")
   const [themeReady, setThemeReady] = useState(false)
+  const [newVersionProjectIds, setNewVersionProjectIds] = useState<
+    ReadonlySet<string>
+  >(() => new Set())
   const dotFieldTheme = sddDotFieldTheme[theme]
 
   useEffect(() => {
@@ -493,6 +504,28 @@ function SddPage() {
       // Ignore storage failures so the switch still works in private contexts.
     }
   }, [theme, themeReady])
+
+  useEffect(() => {
+    let previousSnapshot: SddProjectVersionSnapshot = {}
+    try {
+      previousSnapshot = parseSddProjectVersionSnapshot(
+        window.localStorage.getItem(sddProjectVersionsStorageKey)
+      )
+    } catch {
+      // Storage can be unavailable in private contexts; just skip markers.
+    }
+
+    setNewVersionProjectIds(getNewVersionProjectIds(projects, previousSnapshot))
+
+    try {
+      window.localStorage.setItem(
+        sddProjectVersionsStorageKey,
+        JSON.stringify(buildSddProjectVersionSnapshot(projects))
+      )
+    } catch {
+      // Ignore storage failures; project cards still render normally.
+    }
+  }, [projects])
 
   return (
     <main
@@ -613,6 +646,9 @@ function SddPage() {
               <GithubProjectCard
                 key={`${project.owner}/${project.name}`}
                 project={project}
+                hasNewVersion={newVersionProjectIds.has(
+                  getSddProjectVersionStorageId(project)
+                )}
               />
             ))
           ) : (
