@@ -133,7 +133,7 @@ const repoConfigs: Array<RepoConfig> = [
   { id: "gsd-build/get-shit-done" },
   { id: "yeachan-heo/oh-my-claudecode" },
   { id: "Yeachan-Heo/oh-my-codex" },
-  { id: "garrytan/gstack" },
+  { id: "garrytan/gstack", npmPackage: "gstack" },
   { id: "ruvnet/ruflo" },
   { id: "addyosmani/agent-skills" },
 ]
