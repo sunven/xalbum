@@ -136,6 +136,7 @@ const repoConfigs: Array<RepoConfig> = [
   { id: "garrytan/gstack", npmPackage: "gstack" },
   { id: "ruvnet/ruflo" },
   { id: "addyosmani/agent-skills" },
+  { id: "OthmanAdi/planning-with-files" },
 ]
 
 const languageColors: Record<string, string> = {
