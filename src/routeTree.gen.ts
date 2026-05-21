@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SddRouteImport } from './routes/sdd'
+import { Route as AiToUiRouteImport } from './routes/ai-to-ui'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SddRoute = SddRouteImport.update({
   id: '/sdd',
   path: '/sdd',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiToUiRoute = AiToUiRouteImport.update({
+  id: '/ai-to-ui',
+  path: '/ai-to-ui',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ai-to-ui': typeof AiToUiRoute
   '/sdd': typeof SddRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ai-to-ui': typeof AiToUiRoute
   '/sdd': typeof SddRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ai-to-ui': typeof AiToUiRoute
   '/sdd': typeof SddRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sdd'
+  fullPaths: '/' | '/ai-to-ui' | '/sdd'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sdd'
-  id: '__root__' | '/' | '/sdd'
+  to: '/' | '/ai-to-ui' | '/sdd'
+  id: '__root__' | '/' | '/ai-to-ui' | '/sdd'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AiToUiRoute: typeof AiToUiRoute
   SddRoute: typeof SddRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/sdd'
       fullPath: '/sdd'
       preLoaderRoute: typeof SddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-to-ui': {
+      id: '/ai-to-ui'
+      path: '/ai-to-ui'
+      fullPath: '/ai-to-ui'
+      preLoaderRoute: typeof AiToUiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AiToUiRoute: AiToUiRoute,
   SddRoute: SddRoute,
 }
 export const routeTree = rootRouteImport
