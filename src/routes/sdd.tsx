@@ -1,15 +1,15 @@
+import { Moon, Sun } from "@phosphor-icons/react"
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { setResponseHeader } from "@tanstack/react-start/server"
-import { Moon, Sun } from "@phosphor-icons/react"
-import { useEffect, useState } from "react"
 import type { ComponentType } from "react"
-import type { GithubProject } from "@/lib/github-project"
-import type { SddProjectVersionSnapshot } from "@/lib/sdd-version-history"
+import { useEffect, useState } from "react"
 import DotField from "@/components/DotField"
 import { GithubProjectCard } from "@/components/github-project-card"
 import Shuffle from "@/components/Shuffle"
+import type { GithubProject } from "@/lib/github-project"
 import { sortGithubProjectsByStarsDesc } from "@/lib/github-project-sort"
+import type { SddProjectVersionSnapshot } from "@/lib/sdd-version-history"
 import {
   buildSddProjectVersionSnapshot,
   getNewVersionProjectIds,
@@ -137,6 +137,7 @@ const repoConfigs: Array<RepoConfig> = [
   { id: "ruvnet/ruflo" },
   { id: "addyosmani/agent-skills" },
   { id: "OthmanAdi/planning-with-files" },
+  { id: "mattpocock/skills" },
 ]
 
 const languageColors: Record<string, string> = {
