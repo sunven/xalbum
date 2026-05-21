@@ -61,7 +61,10 @@ const Shuffle = ({
   useGSAP(
     () => {
       if (!ref.current || !text || !fontsLoaded) return;
-      if (respectReducedMotion && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const prefersReducedMotion = window.matchMedia?.(
+        '(prefers-reduced-motion: reduce)'
+      )?.matches;
+      if (respectReducedMotion && prefersReducedMotion) {
         setReady(true);
         onShuffleComplete?.();
         return;
@@ -130,8 +133,8 @@ const Shuffle = ({
           Object.assign(wrap.style, {
             display: 'inline-block',
             overflow: 'hidden',
-            width: w + 'px',
-            height: shuffleDirection === 'up' || shuffleDirection === 'down' ? h + 'px' : 'auto',
+            width: `${w}px`,
+            height: shuffleDirection === 'up' || shuffleDirection === 'down' ? `${h}px` : 'auto',
             verticalAlign: 'bottom'
           });
 
@@ -148,14 +151,14 @@ const Shuffle = ({
           const firstOrig = ch.cloneNode(true);
           Object.assign(firstOrig.style, {
             display: shuffleDirection === 'up' || shuffleDirection === 'down' ? 'block' : 'inline-block',
-            width: w + 'px',
+            width: `${w}px`,
             textAlign: 'center'
           });
 
           ch.setAttribute('data-orig', '1');
           Object.assign(ch.style, {
             display: shuffleDirection === 'up' || shuffleDirection === 'down' ? 'block' : 'inline-block',
-            width: w + 'px',
+            width: `${w}px`,
             textAlign: 'center'
           });
 
@@ -165,7 +168,7 @@ const Shuffle = ({
             if (scrambleCharset) c.textContent = rand(scrambleCharset);
             Object.assign(c.style, {
               display: shuffleDirection === 'up' || shuffleDirection === 'down' ? 'block' : 'inline-block',
-              width: w + 'px',
+              width: `${w}px`,
               textAlign: 'center'
             });
             inner.appendChild(c);
@@ -255,9 +258,9 @@ const Shuffle = ({
           onRepeat: () => {
             if (scrambleCharset) randomizeScrambles();
             if (isVertical) {
-              gsap.set(strips, { y: (i, t) => parseFloat(t.getAttribute('data-start-y') || '0') });
+              gsap.set(strips, { y: (_i, t) => parseFloat(t.getAttribute('data-start-y') || '0') });
             } else {
-              gsap.set(strips, { x: (i, t) => parseFloat(t.getAttribute('data-start-x') || '0') });
+              gsap.set(strips, { x: (_i, t) => parseFloat(t.getAttribute('data-start-x') || '0') });
             }
             onShuffleComplete?.();
           },
@@ -280,9 +283,9 @@ const Shuffle = ({
             stagger: animationMode === 'evenodd' ? stagger : 0
           };
           if (isVertical) {
-            vars.y = (i, t) => parseFloat(t.getAttribute('data-final-y') || '0');
+            vars.y = (_i, t) => parseFloat(t.getAttribute('data-final-y') || '0');
           } else {
-            vars.x = (i, t) => parseFloat(t.getAttribute('data-final-x') || '0');
+            vars.x = (_i, t) => parseFloat(t.getAttribute('data-final-x') || '0');
           }
 
           tl.to(targets, vars, at);

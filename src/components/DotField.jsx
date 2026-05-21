@@ -222,9 +222,10 @@ const DotField = memo(({
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMouseMove);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Rebuild the dot grid when spacing props change; the callback is stored in a ref by the animation effect.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: dotRadius and dotSpacing intentionally trigger the rebuild.
   useEffect(() => {
     rebuildRef.current?.();
   }, [dotRadius, dotSpacing]);
@@ -241,6 +242,7 @@ const DotField = memo(({
         }}
       />
       <svg
+        aria-hidden="true"
         ref={svgRef}
         style={{
           position: 'absolute',
