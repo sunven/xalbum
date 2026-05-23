@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
+import xalbumLogo from "@/logo.svg"
 
 export const Route = createFileRoute("/")({ component: App })
 
@@ -20,11 +21,16 @@ function App() {
     <main className="min-h-svh bg-background px-6 py-10 text-foreground">
       <div className="mx-auto flex max-w-3xl flex-col gap-8">
         <header className="flex flex-col gap-2 border-b border-border pb-6">
+          <img
+            src={xalbumLogo}
+            alt="XAlbum"
+            className="h-14 w-auto self-start"
+          />
           <p className="font-mono text-xs tracking-[0.3em] text-muted-foreground uppercase">
-            XALBUM_INDEX
+            XALBUM_TOOLS_INDEX
           </p>
           <h1 className="font-mono text-3xl font-semibold tracking-tight">
-            工具图谱
+            XAlbum 工具图谱
           </h1>
         </header>
 

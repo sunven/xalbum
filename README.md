@@ -1,21 +1,22 @@
-# TanStack Start + shadcn/ui
+# XAlbum 工具图谱
 
-This is a template for a new TanStack Start project with React, TypeScript, and shadcn/ui.
+XAlbum is a curated tools index for agent and AI interface workflows.
 
-## Adding components
+Current maps:
 
-To add components to your app, run the following command:
+- SDD 框架与工具图谱
+- AI-to-UI 工具图谱
+
+## Development
 
 ```bash
-npx shadcn@latest add button
+pnpm install
+pnpm run dev
 ```
 
-This will place the ui components in the `components` directory.
+## Checks
 
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
+```bash
+pnpm run typecheck
+pnpm run build
 ```
