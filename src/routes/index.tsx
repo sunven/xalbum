@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router"
 import xalbumLogo from "@/logo.svg"
+import { buildRouteHead, homeSeoPage } from "@/lib/seo"
 
-export const Route = createFileRoute("/")({ component: App })
+export const Route = createFileRoute("/")({
+  head: () => buildRouteHead(homeSeoPage),
+  component: App,
+})
 
 const showcaseLinks = [
   {

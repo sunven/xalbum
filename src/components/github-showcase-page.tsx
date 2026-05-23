@@ -1,9 +1,8 @@
-import { Moon, Sun } from "@phosphor-icons/react"
+import { ArrowLeft, Moon, Sun } from "@phosphor-icons/react"
 import type { ComponentType } from "react"
 import { useEffect, useState } from "react"
 import DotField from "@/components/DotField"
 import { GithubProjectCard } from "@/components/github-project-card"
-import Shuffle from "@/components/Shuffle"
 import type { GithubShowcaseConfig } from "@/lib/github-showcase-config"
 import type { GithubProjectsData } from "@/lib/github-showcase-data"
 import type { GithubShowcaseProjectVersionSnapshot } from "@/lib/github-showcase-version-history"
@@ -31,6 +30,26 @@ type DotFieldProps = {
 }
 
 const ShowcaseDotField = DotField as ComponentType<DotFieldProps>
+type ShuffleComponent = ComponentType<{
+  text: string
+  className?: string
+  style?: React.CSSProperties
+  shuffleDirection?: "left" | "right" | "up" | "down"
+  duration?: number
+  ease?: string
+  threshold?: number
+  tag?: string
+  textAlign?: "left" | "center" | "right"
+  onShuffleComplete?: (() => void) | undefined
+  shuffleTimes?: number
+  animationMode?: string
+  stagger?: number
+  triggerOnce?: boolean
+  triggerOnHover?: boolean
+  respectReducedMotion?: boolean
+  colorFrom?: string | undefined
+  colorTo?: string | undefined
+}>
 
 const showcaseDotFieldTheme = {
   light: {
@@ -137,7 +156,20 @@ export function GithubShowcasePage({
   const [newVersionProjectIds, setNewVersionProjectIds] = useState<
     ReadonlySet<string>
   >(() => new Set())
+  const [Shuffle, setShuffle] = useState<ShuffleComponent | null>(null)
   const dotFieldTheme = showcaseDotFieldTheme[theme]
+
+  useEffect(() => {
+    let cancelled = false
+    import("@/components/Shuffle").then((module) => {
+      if (!cancelled) {
+        setShuffle(() => module.default as ShuffleComponent)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     setTheme(getPreferredShowcaseTheme(config.pageId))
@@ -208,13 +240,22 @@ export function GithubShowcasePage({
       <div className="relative mx-auto max-w-6xl px-6 pt-8 pb-16 sm:pt-10 sm:pb-20">
         <header className="mb-12 flex flex-col gap-4">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex min-w-0 flex-1 items-center gap-3 font-mono text-xs tracking-[0.3em] text-primary uppercase">
-              <span className="flex size-2 shrink-0 items-center justify-center">
-                <span className="animate-pulse-dot absolute size-2 rounded-full bg-primary" />
-                <span className="size-1 rounded-full bg-primary" />
-              </span>
-              <span className="min-w-0 truncate">{config.systemLabel}</span>
-              <span className="h-px flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <a
+                href="/"
+                className="inline-flex h-8 items-center gap-1.5 border border-border bg-card/80 px-2.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase shadow-sm backdrop-blur transition-colors hover:border-primary/70 hover:bg-secondary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+              >
+                <ArrowLeft className="size-3.5" aria-hidden="true" />
+                <span>首页</span>
+              </a>
+              <div className="flex min-w-0 flex-1 items-center gap-3 font-mono text-xs tracking-[0.3em] text-primary uppercase">
+                <span className="flex size-2 shrink-0 items-center justify-center">
+                  <span className="animate-pulse-dot absolute size-2 rounded-full bg-primary" />
+                  <span className="size-1 rounded-full bg-primary" />
+                </span>
+                <span className="min-w-0 truncate">{config.systemLabel}</span>
+                <span className="h-px flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
+              </div>
             </div>
             <ShowcaseThemeSwitch
               theme={theme}
@@ -228,32 +269,38 @@ export function GithubShowcasePage({
             <span className="shrink-0 text-primary" aria-hidden="true">
               {"//"}
             </span>
-            <Shuffle
-              text={config.title}
-              tag="h1"
-              textAlign="left"
-              shuffleDirection="right"
-              duration={0.35}
-              animationMode="evenodd"
-              shuffleTimes={1}
-              ease="power3.out"
-              stagger={0.03}
-              threshold={0.1}
-              triggerOnce={true}
-              triggerOnHover={true}
-              respectReducedMotion={true}
-              onShuffleComplete={undefined}
-              colorFrom={undefined}
-              colorTo={undefined}
-              className="m-0 inline-block font-mono text-3xl font-semibold tracking-tight text-foreground normal-case sm:text-5xl"
-              style={{
-                fontSize: "inherit",
-                fontFamily: "inherit",
-                fontWeight: "inherit",
-                lineHeight: "1.1",
-                textTransform: "none",
-              }}
-            />
+            {Shuffle ? (
+              <Shuffle
+                text={config.title}
+                tag="h1"
+                textAlign="left"
+                shuffleDirection="right"
+                duration={0.35}
+                animationMode="evenodd"
+                shuffleTimes={1}
+                ease="power3.out"
+                stagger={0.03}
+                threshold={0.1}
+                triggerOnce={true}
+                triggerOnHover={true}
+                respectReducedMotion={true}
+                onShuffleComplete={undefined}
+                colorFrom={undefined}
+                colorTo={undefined}
+                className="m-0 inline-block font-mono text-3xl font-semibold tracking-tight text-foreground normal-case sm:text-5xl"
+                style={{
+                  fontSize: "inherit",
+                  fontFamily: "inherit",
+                  fontWeight: "inherit",
+                  lineHeight: "1.1",
+                  textTransform: "none",
+                }}
+              />
+            ) : (
+              <h1 className="m-0 inline-block font-mono text-3xl font-semibold tracking-tight text-foreground normal-case sm:text-5xl">
+                {config.title}
+              </h1>
+            )}
             <span
               className="shrink-0 animate-pulse text-primary"
               aria-hidden="true"

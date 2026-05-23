@@ -9,13 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SddRouteImport } from './routes/sdd'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as AiToUiRouteImport } from './routes/ai-to-ui'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SddRoute = SddRouteImport.update({
   id: '/sdd',
   path: '/sdd',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AiToUiRoute = AiToUiRouteImport.update({
@@ -32,40 +44,62 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai-to-ui': typeof AiToUiRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sdd': typeof SddRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai-to-ui': typeof AiToUiRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sdd': typeof SddRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ai-to-ui': typeof AiToUiRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sdd': typeof SddRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ai-to-ui' | '/sdd'
+  fullPaths: '/' | '/ai-to-ui' | '/robots.txt' | '/sdd' | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ai-to-ui' | '/sdd'
-  id: '__root__' | '/' | '/ai-to-ui' | '/sdd'
+  to: '/' | '/ai-to-ui' | '/robots.txt' | '/sdd' | '/sitemap.xml'
+  id: '__root__' | '/' | '/ai-to-ui' | '/robots.txt' | '/sdd' | '/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiToUiRoute: typeof AiToUiRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SddRoute: typeof SddRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sdd': {
       id: '/sdd'
       path: '/sdd'
       fullPath: '/sdd'
       preLoaderRoute: typeof SddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ai-to-ui': {
@@ -88,7 +122,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiToUiRoute: AiToUiRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SddRoute: SddRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
