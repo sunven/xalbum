@@ -15,6 +15,7 @@ export interface GithubProject {
   versionSource: "npm" | "release" | "tag" | "none"
   versionUrl?: string
   topics: Array<string>
+  updatedAtRaw: string
   updatedAt: string
   url: string
 }

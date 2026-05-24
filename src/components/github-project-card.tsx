@@ -9,7 +9,7 @@ import {
   Scales as Scale,
   Star,
   Tag,
-} from "@phosphor-icons/react" 
+} from "@phosphor-icons/react"
 
 import type { GithubProject } from "@/lib/github-project"
 import GlareHover from "@/components/GlareHover"
