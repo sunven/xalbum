@@ -18,6 +18,8 @@ export type GithubShowcaseCacheStatus =
   | "stale_refresh_started"
   | "stale_refresh_skipped"
   | "refresh_error"
+  | "scheduled_refresh"
+  | "scheduled_refresh_skipped"
 
 export type GithubShowcaseCachePayload = {
   version: typeof CACHE_VERSION
@@ -61,6 +63,15 @@ export type GithubShowcaseCacheResult = {
   status: GithubShowcaseCacheStatus
   cacheKey: string
   durationMs: number
+}
+
+export type GithubShowcaseCacheRefreshResult = {
+  cacheKey: string
+  status: Extract<
+    GithubShowcaseCacheStatus,
+    "scheduled_refresh" | "scheduled_refresh_skipped"
+  >
+  projectCount: number
 }
 
 type CacheOptions = {
@@ -328,6 +339,61 @@ export function createGithubShowcaseCachePayload({
 
 export function isCacheableGithubShowcaseData(data: GithubProjectsData) {
   return data.projects.length > 0
+}
+
+export async function refreshGithubShowcaseCachePayload({
+  config,
+  cache,
+  fetchFresh,
+  now = Date.now,
+  logger,
+}: {
+  config: GithubShowcaseConfig
+  cache: GithubShowcaseCacheStore
+  fetchFresh: () => Promise<GithubProjectsData>
+  now?: () => number
+  logger?: GithubShowcaseCacheLogger
+}): Promise<GithubShowcaseCacheRefreshResult> {
+  const startedAt = now()
+  const cacheKey = getGithubShowcaseCacheKey(config)
+  const data = await fetchFresh()
+
+  if (!isCacheableGithubShowcaseData(data)) {
+    logger?.({
+      pageId: config.pageId,
+      cacheKey,
+      status: "scheduled_refresh_skipped",
+      durationMs: Math.max(0, now() - startedAt),
+      projectCount: data.projects.length,
+    })
+
+    return {
+      cacheKey,
+      status: "scheduled_refresh_skipped",
+      projectCount: data.projects.length,
+    }
+  }
+
+  await writeGithubShowcaseCachePayload({
+    cache,
+    cacheKey,
+    data,
+    nowMs: now(),
+  })
+
+  logger?.({
+    pageId: config.pageId,
+    cacheKey,
+    status: "scheduled_refresh",
+    durationMs: Math.max(0, now() - startedAt),
+    projectCount: data.projects.length,
+  })
+
+  return {
+    cacheKey,
+    status: "scheduled_refresh",
+    projectCount: data.projects.length,
+  }
 }
 
 async function refreshGithubShowcaseCache({

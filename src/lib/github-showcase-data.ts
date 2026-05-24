@@ -5,6 +5,7 @@ import {
   getDefaultGithubShowcaseBackgroundTaskScheduler,
   getDefaultGithubShowcaseCache,
   getGithubShowcaseCachedData,
+  refreshGithubShowcaseCachePayload,
   type GithubShowcaseBackgroundTaskScheduler,
   type GithubShowcaseCacheLogger,
   type GithubShowcaseCacheStore,
@@ -145,6 +146,27 @@ export async function fetchGithubShowcaseProjects(
         ? getGithubErrorMessage(failures[0].reason)
         : undefined,
   }
+}
+
+export async function refreshGithubShowcaseProjectsCache(
+  config: GithubShowcaseConfig,
+  {
+    cache,
+    logger = logGithubShowcaseCacheEvent,
+    now,
+  }: {
+    cache: GithubShowcaseCacheStore
+    logger?: GithubShowcaseCacheLogger
+    now?: () => number
+  }
+) {
+  return refreshGithubShowcaseCachePayload({
+    config,
+    cache,
+    fetchFresh: () => fetchGithubShowcaseProjects(config.repoConfigs),
+    logger,
+    now,
+  })
 }
 
 async function fetchGithubRepo(
