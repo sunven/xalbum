@@ -1,11 +1,30 @@
 import { setResponseHeader } from "@tanstack/react-start/server"
 import type { GithubProject } from "@/lib/github-project"
 import { sortGithubProjectsByStarsDesc } from "@/lib/github-project-sort"
-import type { RepoConfig } from "@/lib/github-showcase-config"
+import {
+  getDefaultGithubShowcaseBackgroundTaskScheduler,
+  getDefaultGithubShowcaseCache,
+  getGithubShowcaseCachedData,
+  type GithubShowcaseBackgroundTaskScheduler,
+  type GithubShowcaseCacheLogger,
+  type GithubShowcaseCacheStore,
+} from "@/lib/github-showcase-cache"
+import type {
+  GithubShowcaseConfig,
+  RepoConfig,
+} from "@/lib/github-showcase-config"
+import { formatRelativeTime } from "@/lib/relative-time"
 
 export type GithubProjectsData = {
   projects: Array<GithubProject>
   error?: string
+}
+
+export type GetGithubShowcaseProjectsOptions = {
+  cache?: GithubShowcaseCacheStore | null
+  scheduleBackgroundTask?: GithubShowcaseBackgroundTaskScheduler
+  logger?: GithubShowcaseCacheLogger
+  now?: () => number
 }
 
 type GithubRepoResponse = {
@@ -71,10 +90,36 @@ const languageColors: Record<string, string> = {
 }
 
 export async function getGithubShowcaseProjects(
+  config: GithubShowcaseConfig,
+  options: GetGithubShowcaseProjectsOptions = {}
+): Promise<GithubProjectsData> {
+  setResponseHeader(
+    "Cache-Control",
+    "public, max-age=300, s-maxage=900, stale-if-error=86400"
+  )
+
+  const cache =
+    options.cache === undefined
+      ? await getDefaultGithubShowcaseCache()
+      : options.cache
+  const scheduleBackgroundTask =
+    options.scheduleBackgroundTask ??
+    (await getDefaultGithubShowcaseBackgroundTaskScheduler())
+  const result = await getGithubShowcaseCachedData({
+    config,
+    cache: cache ?? undefined,
+    fetchFresh: () => fetchGithubShowcaseProjects(config.repoConfigs),
+    scheduleBackgroundTask,
+    logger: options.logger ?? logGithubShowcaseCacheEvent,
+    now: options.now,
+  })
+
+  return formatGithubProjectRelativeTimes(result.data, options.now?.())
+}
+
+export async function fetchGithubShowcaseProjects(
   repoConfigs: Array<RepoConfig>
 ): Promise<GithubProjectsData> {
-  setResponseHeader("Cache-Control", "public, max-age=300, s-maxage=900")
-
   const results = await Promise.allSettled(
     repoConfigs.map(async (config) => {
       const repo = await fetchGithubRepo(config.id)
@@ -277,34 +322,33 @@ function mapGithubRepoToProject(
     versionSource: version.versionSource,
     versionUrl: version.versionUrl,
     topics: repo.topics ?? [],
-    updatedAt: formatRelativeTime(repo.pushed_at ?? repo.updated_at),
+    updatedAtRaw: repo.pushed_at ?? repo.updated_at,
+    updatedAt: repo.pushed_at ?? repo.updated_at,
     url: repo.html_url,
   }
 }
 
-function formatRelativeTime(dateValue: string) {
-  const timestamp = new Date(dateValue).getTime()
-  const diffMs = Date.now() - timestamp
-  const diffMinutes = Math.max(1, Math.floor(diffMs / 60_000))
+function logGithubShowcaseCacheEvent(
+  event: Parameters<GithubShowcaseCacheLogger>[0]
+) {
+  console.info("github_showcase_cache", {
+    pageId: event.pageId,
+    status: event.status,
+    ageSeconds: event.ageSeconds,
+    durationMs: event.durationMs,
+    projectCount: event.projectCount,
+  })
+}
 
-  if (diffMinutes < 60) {
-    return `${diffMinutes}M AGO`
+function formatGithubProjectRelativeTimes(
+  data: GithubProjectsData,
+  nowMs = Date.now()
+): GithubProjectsData {
+  return {
+    ...data,
+    projects: data.projects.map((project) => ({
+      ...project,
+      updatedAt: formatRelativeTime(project.updatedAtRaw, nowMs),
+    })),
   }
-
-  const diffHours = Math.floor(diffMinutes / 60)
-  if (diffHours < 24) {
-    return `${diffHours}H AGO`
-  }
-
-  const diffDays = Math.floor(diffHours / 24)
-  if (diffDays < 30) {
-    return `${diffDays}D AGO`
-  }
-
-  const diffMonths = Math.floor(diffDays / 30)
-  if (diffMonths < 12) {
-    return `${diffMonths}MO AGO`
-  }
-
-  return `${Math.floor(diffMonths / 12)}Y AGO`
 }
