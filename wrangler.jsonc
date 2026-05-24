@@ -3,5 +3,11 @@
   "name": "xalbum",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry"
+  "main": "@tanstack/react-start/server-entry",
+  "kv_namespaces": [
+    {
+      "binding": "SHOWCASE_CACHE",
+      "id": "5c28e7498a184cfba1f815ffe5bb6f3f"
+    }
+  ]
 }

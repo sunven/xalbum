@@ -6,7 +6,7 @@ import { getGithubShowcaseProjects } from "@/lib/github-showcase-data"
 import { buildRouteHead, getShowcaseSeoPage } from "@/lib/seo"
 
 const getSddProjects = createServerFn({ method: "GET" }).handler(() =>
-  getGithubShowcaseProjects(sddShowcaseConfig.repoConfigs)
+  getGithubShowcaseProjects(sddShowcaseConfig)
 )
 
 export const Route = createFileRoute("/sdd")({

@@ -6,7 +6,7 @@ import { getGithubShowcaseProjects } from "@/lib/github-showcase-data"
 import { buildRouteHead, getShowcaseSeoPage } from "@/lib/seo"
 
 const getAiToUiProjects = createServerFn({ method: "GET" }).handler(() =>
-  getGithubShowcaseProjects(aiToUiShowcaseConfig.repoConfigs)
+  getGithubShowcaseProjects(aiToUiShowcaseConfig)
 )
 
 export const Route = createFileRoute("/ai-to-ui")({
