@@ -215,7 +215,7 @@ export function GithubShowcasePage({
     <main
       className={`github-showcase-page ${
         theme === "dark" ? "dark" : ""
-      } relative min-h-screen overflow-hidden bg-background transition-colors duration-300`}
+      } relative min-h-screen overflow-x-clip bg-background transition-colors duration-300`}
       data-theme={theme}
     >
       <style>{showcasePageStyles}</style>
@@ -237,34 +237,34 @@ export function GithubShowcasePage({
         />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 pt-8 pb-16 sm:pt-10 sm:pb-20">
-        <header className="mb-12 flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <a
-                href="/"
-                className="inline-flex h-8 items-center gap-1.5 border border-border bg-card/80 px-2.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase shadow-sm backdrop-blur transition-colors hover:border-primary/70 hover:bg-secondary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-              >
-                <ArrowLeft className="size-3.5" aria-hidden="true" />
-                <span>首页</span>
-              </a>
-              <div className="flex min-w-0 flex-1 items-center gap-3 font-mono text-xs tracking-[0.3em] text-primary uppercase">
-                <span className="flex size-2 shrink-0 items-center justify-center">
-                  <span className="animate-pulse-dot absolute size-2 rounded-full bg-primary" />
-                  <span className="size-1 rounded-full bg-primary" />
-                </span>
-                <span className="min-w-0 truncate">{config.systemLabel}</span>
-                <span className="h-px flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
-              </div>
+      <div className="relative mx-auto max-w-6xl px-6 pt-0 pb-16 sm:pb-20">
+        <div className="sticky top-0 z-30 -mx-6 flex items-start justify-between gap-4 bg-background/85 px-6 py-2 backdrop-blur">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <a
+              href="/"
+              className="inline-flex h-8 items-center gap-1.5 border border-border bg-card/80 px-2.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase shadow-sm backdrop-blur transition-colors hover:border-primary/70 hover:bg-secondary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            >
+              <ArrowLeft className="size-3.5" aria-hidden="true" />
+              <span>首页</span>
+            </a>
+            <div className="flex min-w-0 flex-1 items-center gap-3 font-mono text-xs tracking-[0.3em] text-primary uppercase">
+              <span className="flex size-2 shrink-0 items-center justify-center">
+                <span className="animate-pulse-dot absolute size-2 rounded-full bg-primary" />
+                <span className="size-1 rounded-full bg-primary" />
+              </span>
+              <span className="min-w-0 truncate">{config.systemLabel}</span>
+              <span className="h-px flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
             </div>
-            <ShowcaseThemeSwitch
-              theme={theme}
-              onToggle={() =>
-                setTheme((current) => (current === "dark" ? "light" : "dark"))
-              }
-            />
           </div>
+          <ShowcaseThemeSwitch
+            theme={theme}
+            onToggle={() =>
+              setTheme((current) => (current === "dark" ? "light" : "dark"))
+            }
+          />
+        </div>
 
+        <header className="mt-3 mb-12 flex flex-col gap-4">
           <div className="flex items-baseline gap-2 font-mono text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
             <span className="shrink-0 text-primary" aria-hidden="true">
               {"//"}
@@ -309,7 +309,7 @@ export function GithubShowcasePage({
             </span>
           </div>
 
-          <p className="max-w-2xl font-sans text-sm leading-relaxed text-pretty text-muted-foreground sm:text-base">
+          <p className="max-w-none font-sans text-sm leading-relaxed text-muted-foreground sm:text-base">
             {config.description}
           </p>
 
