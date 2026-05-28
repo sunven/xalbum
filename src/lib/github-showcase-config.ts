@@ -116,12 +116,12 @@ export const aiToUiShowcaseConfig = {
     { id: "CopilotKit/CopilotKit" },
     { id: "tambo-ai/tambo" },
     { id: "thesysdev/openui" },
-    { id: "PrefectHQ/prefab" },
+    // { id: "PrefectHQ/prefab" }, // star 数较少，暂不展示
     { id: "CopilotKit/OpenGenerativeUI" },
     { id: "CopilotKit/generative-ui" },
-    { id: "miurla/morphic" },
-    { id: "nraiden/cofounder" },
-    { id: "google/a2ui" },
+    // { id: "miurla/morphic" }, // 搜索相关
+    // { id: "nraiden/cofounder" }, // 代码生成
+    { id: "google/a2ui"},
   ],
 } satisfies GithubShowcaseConfig
 
