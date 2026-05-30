@@ -4,9 +4,6 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/worker.ts",
-  "triggers": {
-    "crons": ["*/30 * * * *"]
-  },
   "kv_namespaces": [
     {
       "binding": "SHOWCASE_CACHE",

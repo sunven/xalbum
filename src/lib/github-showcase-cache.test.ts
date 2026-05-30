@@ -4,7 +4,6 @@ import {
   getGithubShowcaseCacheKey,
   getGithubShowcaseCachedData,
   parseGithubShowcaseCachePayload,
-  refreshGithubShowcaseCachePayload,
   type GithubShowcaseCachePayload,
   type GithubShowcaseCacheStore,
 } from "@/lib/github-showcase-cache"
@@ -318,51 +317,6 @@ describe("github showcase cache", () => {
     expect(result.status).toBe("miss")
     expect(result.data.projects).toEqual([])
     expect(cache.writes).toHaveLength(0)
-  })
-
-  it("force refreshes cache payloads for scheduled prewarming", async () => {
-    const cache = new FakeCache()
-    const logger = vi.fn()
-
-    const result = await refreshGithubShowcaseCachePayload({
-      config: sddShowcaseConfig,
-      cache,
-      fetchFresh: async () => data("scheduled"),
-      now: () => baseTime,
-      logger,
-    })
-
-    expect(result.status).toBe("scheduled_refresh")
-    expect(result.projectCount).toBe(1)
-    expect(cache.writes).toHaveLength(1)
-    expect(cache.writes[0].data.projects[0].name).toBe("scheduled")
-    expect(cache.writes[0].refreshAfter).toBe(
-      new Date(baseTime + 45 * 60 * 1000).toISOString()
-    )
-    expect(logger).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "scheduled_refresh",
-        projectCount: 1,
-      })
-    )
-  })
-
-  it("does not overwrite cache payloads when scheduled refresh has no projects", async () => {
-    const cache = new FakeCache(payload())
-
-    const result = await refreshGithubShowcaseCachePayload({
-      config: sddShowcaseConfig,
-      cache,
-      fetchFresh: async () => ({
-        projects: [],
-        error: "GitHub API request failed.",
-      }),
-      now: () => baseTime,
-    })
-
-    expect(result.status).toBe("scheduled_refresh_skipped")
-    expect(cache.writes).toHaveLength(0)
-    expect(cache.cachedPayload?.data.projects[0].name).toBe("spec-kit")
   })
 
   it("ignores corrupt cached payloads", () => {
