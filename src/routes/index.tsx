@@ -207,6 +207,13 @@ function App() {
                 浏览 AI-to-UI
                 <ArrowUpRight className="size-4" aria-hidden="true" />
               </a>
+              <a
+                href="/tools"
+                className="inline-flex h-12 items-center justify-center gap-2 border border-[oklch(0.84_0.018_230)] bg-white/70 px-5 font-mono text-xs font-semibold tracking-widest text-[oklch(0.22_0.03_240)] uppercase shadow-sm backdrop-blur transition-colors hover:border-[oklch(0.58_0.13_200_/_0.55)] hover:bg-[oklch(0.58_0.13_200_/_0.08)] focus-visible:ring-2 focus-visible:ring-[oklch(0.58_0.13_200_/_0.45)] focus-visible:outline-none"
+              >
+                工具目录
+                <Database className="size-4" aria-hidden="true" />
+              </a>
             </div>
           </div>
 
@@ -259,7 +266,7 @@ function SiteHeader() {
 
       <nav
         className="flex shrink-0 items-center gap-2 font-mono text-[10px] tracking-widest uppercase"
-        aria-label="主要图谱"
+        aria-label="主要页面"
       >
         <a
           href="/sdd"
@@ -272,6 +279,12 @@ function SiteHeader() {
           className="border border-[oklch(0.84_0.018_230)] bg-white/65 px-3 py-2 text-[oklch(0.42_0.035_230)] backdrop-blur transition-colors hover:border-[oklch(0.62_0.15_145_/_0.55)] hover:text-[oklch(0.47_0.13_145)] focus-visible:ring-2 focus-visible:ring-[oklch(0.62_0.15_145_/_0.4)] focus-visible:outline-none"
         >
           AI-to-UI
+        </a>
+        <a
+          href="/tools"
+          className="border border-[oklch(0.84_0.018_230)] bg-white/65 px-3 py-2 text-[oklch(0.42_0.035_230)] backdrop-blur transition-colors hover:border-[oklch(0.58_0.13_200_/_0.55)] hover:text-[oklch(0.58_0.13_200)] focus-visible:ring-2 focus-visible:ring-[oklch(0.58_0.13_200_/_0.45)] focus-visible:outline-none"
+        >
+          Tools
         </a>
       </nav>
     </header>

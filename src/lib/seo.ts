@@ -48,9 +48,34 @@ export const showcaseSeoPages = githubShowcaseConfigs.map((config) =>
   getShowcaseSeoPage(config)
 )
 
+export const toolCatalogSeoPage = {
+  path: "/tools",
+  title: "XAlbum 工具目录 | Local Tools Catalog",
+  description:
+    "浏览 XAlbum 从 src/data 整理出的本地工具目录，按名称、链接和标签搜索筛选 400+ builder tools。",
+  ogImage: siteSeo.defaultOgImage,
+  lastModified: "2026-06-08",
+  sitemapPriority: 0.7,
+  structuredData: {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "XAlbum 工具目录 | Local Tools Catalog",
+    url: absoluteUrl("/tools"),
+    inLanguage: siteSeo.locale,
+    description:
+      "浏览 XAlbum 从 src/data 整理出的本地工具目录，按名称、链接和标签搜索筛选 400+ builder tools。",
+    isPartOf: {
+      "@type": "WebSite",
+      name: siteSeo.name,
+      url: siteSeo.origin,
+    },
+  },
+} satisfies SeoPage
+
 export const indexableSeoPages = [
   homeSeoPage,
   ...showcaseSeoPages,
+  toolCatalogSeoPage,
 ] satisfies Array<SeoPage>
 
 export function getShowcaseSeoPage(config: GithubShowcaseConfig): SeoPage {

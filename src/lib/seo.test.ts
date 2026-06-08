@@ -13,6 +13,7 @@ import {
   homeSeoPage,
   indexableSeoPages,
   siteSeo,
+  toolCatalogSeoPage,
 } from "@/lib/seo"
 
 describe("seo", () => {
@@ -40,6 +41,23 @@ describe("seo", () => {
     expect(head.meta).not.toContainEqual(
       expect.objectContaining({ name: "keywords" })
     )
+  })
+
+  it("builds public metadata for the tool catalog page", () => {
+    const head = buildRouteHead(toolCatalogSeoPage)
+
+    expect(head.links).toContainEqual({
+      rel: "canonical",
+      href: "https://xalbum.sunven.workers.dev/tools",
+    })
+    expect(head.meta).toContainEqual({
+      title: "XAlbum 工具目录 | Local Tools Catalog",
+    })
+    expect(head.meta).toContainEqual({
+      name: "description",
+      content:
+        "浏览 XAlbum 从 src/data 整理出的本地工具目录，按名称、链接和标签搜索筛选 400+ builder tools。",
+    })
   })
 
   it("includes JSON-LD CollectionPage and ItemList for map pages", () => {
@@ -73,6 +91,9 @@ describe("seo", () => {
     expect(sitemap).toContain(
       "<loc>https://xalbum.sunven.workers.dev/ai-to-ui</loc>"
     )
+    expect(sitemap).toContain(
+      "<loc>https://xalbum.sunven.workers.dev/tools</loc>"
+    )
     expect(sitemap).not.toContain("localhost")
     expect(sitemap).not.toContain("?url=")
   })
@@ -92,6 +113,6 @@ describe("seo", () => {
 
   it("uses zh-CN as the current bilingual page locale", () => {
     expect(siteSeo.locale).toBe("zh-CN")
-    expect(indexableSeoPages).toHaveLength(3)
+    expect(indexableSeoPages).toHaveLength(4)
   })
 })
